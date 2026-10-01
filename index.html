@@ -115,6 +115,21 @@ summary{cursor:pointer;color:#c4b5fd;padding:8px 0}
 #movieList{max-height:210px;overflow:auto;padding-left:27px;color:#a8a29e;font-size:.84rem}
 #movieList li{padding:3px 0}
 #movieList li.used{text-decoration:line-through;opacity:.3}
+
+.movie-editor{margin-top:16px;padding:12px;border-radius:14px;background:rgba(255,255,255,.025);border:1px solid var(--line)}
+.movie-editor summary{font-size:.86rem}
+.editor-note{font-size:.75rem;color:#a8a29e;line-height:1.45;margin:4px 0 12px}
+#editorRows{display:grid;gap:8px;max-height:430px;overflow:auto;padding-right:3px}
+.editor-row{display:grid;grid-template-columns:28px minmax(0,1fr) 82px;gap:7px;align-items:center}
+.editor-num{font-size:.74rem;color:#9388a4;text-align:center}
+.editor-row input{width:100%;min-width:0;border:1px solid var(--line);border-radius:9px;background:#0c0910;color:white;padding:9px 10px;outline:none}
+.editor-row input:focus{border-color:var(--orange)}
+.editor-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+#saveMovies{background:linear-gradient(135deg,#ff8c00,#ff4500);color:white}
+#restoreMovies{background:rgba(255,255,255,.05);color:#ddd6fe;border:1px solid var(--line)}
+.editor-status{font-size:.75rem;margin-top:9px;color:#a8a29e}
+.editor-status.ok{color:var(--green)}.editor-status.err{color:var(--red)}
+
 .settings{
   margin-top:16px;padding:12px;border-radius:14px;background:rgba(255,255,255,.025);border:1px solid var(--line)
 }
@@ -200,6 +215,17 @@ summary{cursor:pointer;color:#c4b5fd;padding:8px 0}
       <ol id="movieList"></ol>
     </details>
 
+    <details class="movie-editor">
+      <summary>✏️ Editar las 31 películas</summary>
+      <p class="editor-note">Cambia el título o el año y toca <strong>Guardar películas</strong>. Los cambios se guardan únicamente en este navegador y la ruleta se actualiza al instante.</p>
+      <div id="editorRows"></div>
+      <div class="editor-actions">
+        <button id="saveMovies">💾 Guardar películas</button>
+        <button id="restoreMovies">↩️ Restaurar originales</button>
+      </div>
+      <div id="editorStatus" class="editor-status">Puedes editar las 31 películas cuando quieras.</div>
+    </details>
+
     <details class="settings">
       <summary>⚙️ Configurar pósteres y datos de películas</summary>
       <div class="api-row">
@@ -226,7 +252,7 @@ summary{cursor:pointer;color:#c4b5fd;padding:8px 0}
    31 PELÍCULAS
    Puedes cambiar esta lista por tus favoritas.
 ========================================================= */
-const movies = [
+const defaultMovies = [
   {title:"Halloween",year:1978},
   {title:"Hocus Pocus",year:1993},
   {title:"Beetlejuice",year:1988}, // Tim Burton
@@ -258,7 +284,15 @@ const movies = [
   {title:"Sinister",year:2012},
   {title:"The Lost Boys",year:1987},
   {title:"Scooby-Doo",year:2002}
-];
+];;
+let movies=[...defaultMovies];
+try{
+  const savedMovies=JSON.parse(localStorage.getItem("halloween_movies")||"null");
+  if(Array.isArray(savedMovies) && savedMovies.length===31 &&
+     savedMovies.every(m=>m && typeof m.title==="string" && Number.isFinite(Number(m.year)))){
+    movies=savedMovies.map(m=>({title:m.title.trim(),year:Number(m.year)}));
+  }
+}catch(e){}
 
 const colors=["#ff7518","#7b2cbf","#e85d04","#5a189a","#ff9e00","#3c096c","#dc2f02","#7209b7"];
 const canvas=document.getElementById("wheel");
@@ -281,6 +315,10 @@ const movieList=document.getElementById("movieList");
 const apiKeyInput=document.getElementById("apiKey");
 const saveApi=document.getElementById("saveApi");
 const apiStatus=document.getElementById("apiStatus");
+const editorRows=document.getElementById("editorRows");
+const saveMovies=document.getElementById("saveMovies");
+const restoreMovies=document.getElementById("restoreMovies");
+const editorStatus=document.getElementById("editorStatus");
 
 let available=[...movies];
 let history=[];
@@ -364,6 +402,91 @@ function updateUI(){
   });
 
   drawWheel();
+}
+
+
+function renderMovieEditor(){
+  editorRows.innerHTML="";
+  movies.forEach((movie,index)=>{
+    const row=document.createElement("div");
+    row.className="editor-row";
+
+    const num=document.createElement("span");
+    num.className="editor-num";
+    num.textContent=index+1;
+
+    const title=document.createElement("input");
+    title.type="text";
+    title.value=movie.title;
+    title.dataset.index=index;
+    title.dataset.field="title";
+    title.setAttribute("aria-label",`Título de película ${index+1}`);
+
+    const year=document.createElement("input");
+    year.type="number";
+    year.inputMode="numeric";
+    year.min="1888";
+    year.max="2100";
+    year.value=movie.year;
+    year.dataset.index=index;
+    year.dataset.field="year";
+    year.setAttribute("aria-label",`Año de película ${index+1}`);
+
+    row.append(num,title,year);
+    editorRows.appendChild(row);
+  });
+}
+
+function saveMovieEdits(){
+  if(spinning){
+    editorStatus.textContent="Espera a que termine de girar la ruleta.";
+    editorStatus.className="editor-status err";
+    return;
+  }
+
+  const rows=[...editorRows.querySelectorAll(".editor-row")];
+  const edited=rows.map(row=>{
+    const inputs=row.querySelectorAll("input");
+    return {title:inputs[0].value.trim(),year:Number(inputs[1].value)};
+  });
+
+  const invalid=edited.findIndex(m=>!m.title || !Number.isInteger(m.year) || m.year<1888 || m.year>2100);
+  if(invalid!==-1){
+    editorStatus.textContent=`Revisa la película ${invalid+1}: necesita título y un año válido.`;
+    editorStatus.className="editor-status err";
+    return;
+  }
+
+  movies=edited;
+  try{localStorage.setItem("halloween_movies",JSON.stringify(movies));}catch(e){}
+  available=[...movies];
+  history=[];
+  rotation=0;
+  result.textContent="¡Gira la ruleta!";
+  filmCard.classList.remove("show");
+  spinBtn.disabled=false;
+  spinBtn.textContent="🎃 GIRAR LA RULETA";
+  updateUI();
+  renderMovieEditor();
+  editorStatus.textContent="✓ Películas guardadas. La ruleta ya fue actualizada.";
+  editorStatus.className="editor-status ok";
+}
+
+function restoreOriginalMovies(){
+  if(spinning)return;
+  movies=defaultMovies.map(m=>({...m}));
+  try{localStorage.removeItem("halloween_movies");}catch(e){}
+  available=[...movies];
+  history=[];
+  rotation=0;
+  result.textContent="¡Gira la ruleta!";
+  filmCard.classList.remove("show");
+  spinBtn.disabled=false;
+  spinBtn.textContent="🎃 GIRAR LA RULETA";
+  updateUI();
+  renderMovieEditor();
+  editorStatus.textContent="✓ Se restauraron las 31 películas originales.";
+  editorStatus.className="editor-status ok";
 }
 
 function initAudio(){
@@ -563,6 +686,9 @@ soundBtn.addEventListener("click",()=>{
   if(soundEnabled)initAudio();
 });
 
+saveMovies.addEventListener("click",saveMovieEdits);
+restoreMovies.addEventListener("click",restoreOriginalMovies);
+
 spinBtn.addEventListener("click",spin);
 resetBtn.addEventListener("click",resetAll);
 
@@ -571,6 +697,7 @@ if(tmdbToken){
   apiStatus.className="status ok";
 }
 
+renderMovieEditor();
 updateUI();
 </script>
 </body>
