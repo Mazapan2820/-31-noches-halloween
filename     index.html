@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#090510">
+<title>31 Noches de Halloween de Chivito y Mazapán 🎃</title>
+
+<style>
+:root{
+  --bg:#07040b;
+  --panel:rgba(20,12,29,.88);
+  --panel2:rgba(38,20,48,.82);
+  --orange:#ff7518;
+  --orange2:#ffad4a;
+  --purple:#8b3fc7;
+  --purple2:#4c1d65;
+  --text:#fff7ed;
+  --muted:#c4b5fd;
+  --line:rgba(255,255,255,.12);
+  --green:#86efac;
+  --red:#fb7185;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  min-height:100vh;
+  color:var(--text);
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  background:
+    radial-gradient(circle at 50% -10%,rgba(139,63,199,.45),transparent 35%),
+    radial-gradient(circle at 0% 80%,rgba(255,117,24,.16),transparent 30%),
+    linear-gradient(145deg,#030206,#110719 55%,#050306);
+  overflow-x:hidden;
+}
+button,input{font:inherit}
+button{touch-action:manipulation}
+.bg{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.bg span{position:absolute;opacity:.16;font-size:clamp(24px,4vw,48px);animation:float 9s ease-in-out infinite}
+.bg span:nth-child(1){left:5%;top:13%}
+.bg span:nth-child(2){right:7%;top:20%;animation-delay:2s}
+.bg span:nth-child(3){left:12%;bottom:15%;animation-delay:4s}
+.bg span:nth-child(4){right:12%;bottom:27%;animation-delay:1s}
+@keyframes float{50%{transform:translateY(-22px) rotate(8deg)}}
+.app{position:relative;z-index:1;width:min(1240px,94%);margin:auto;padding:30px 0 55px}
+header{text-align:center;margin-bottom:28px}
+.logo{font-size:54px;filter:drop-shadow(0 0 16px rgba(255,117,24,.4));animation:bob 3s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-7px)}}
+h1{
+  margin:4px 0 4px;
+  font-size:clamp(2rem,6vw,4.4rem);
+  line-height:1.05;
+  background:linear-gradient(90deg,#ff7518,#ffd08a,#ff7518);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.subtitle{color:var(--muted);margin:0;font-size:1rem}
+.layout{
+  display:grid;
+  grid-template-columns:minmax(300px,700px) minmax(300px,390px);
+  gap:42px;
+  align-items:center;
+  justify-content:center;
+}
+.wheel-box{position:relative;width:min(92vw,680px);aspect-ratio:1;margin:auto}
+.wheel-glow{position:absolute;inset:3%;border-radius:50%;background:radial-gradient(circle,rgba(255,117,24,.20),transparent 64%);filter:blur(28px)}
+canvas{position:relative;width:100%;height:100%;display:block;filter:drop-shadow(0 20px 35px #000) drop-shadow(0 0 20px rgba(255,117,24,.18))}
+.pointer{
+  position:absolute;z-index:5;top:-5px;left:50%;transform:translateX(-50%);
+  width:0;height:0;border-left:25px solid transparent;border-right:25px solid transparent;
+  border-top:52px solid var(--orange);filter:drop-shadow(0 0 6px #000) drop-shadow(0 0 12px var(--orange));
+}
+.panel{
+  background:var(--panel);border:1px solid var(--line);border-radius:26px;padding:24px;
+  box-shadow:0 25px 60px rgba(0,0,0,.48),inset 0 1px rgba(255,255,255,.05);
+  backdrop-filter:blur(16px);
+}
+.panel h2{margin:0 0 5px;font-size:1.55rem}
+.description{margin:0;color:#a8a29e;line-height:1.5;font-size:.92rem}
+.result{
+  margin:20px 0 14px;padding:17px;border-radius:18px;text-align:center;
+  background:linear-gradient(135deg,rgba(255,117,24,.11),rgba(139,63,199,.16));
+  border:1px solid rgba(255,117,24,.25);
+}
+.result small{color:#a8a29e}
+#result{min-height:54px;display:flex;align-items:center;justify-content:center;color:var(--orange2);font-size:clamp(1.25rem,4vw,1.8rem);font-weight:900;line-height:1.15;margin-top:6px}
+.counter{margin-top:7px;color:#a8a29e;font-size:.82rem}
+button{
+  width:100%;min-height:50px;border-radius:14px;border:0;padding:11px 16px;
+  cursor:pointer;font-weight:850;transition:.16s transform,.16s opacity,.16s box-shadow
+}
+button:hover:not(:disabled){transform:translateY(-2px)}
+button:disabled{opacity:.45;cursor:not-allowed}
+#spinBtn{background:linear-gradient(135deg,#ff8c00,#ff4500);color:white;font-size:1.08rem;box-shadow:0 9px 28px rgba(255,117,24,.25)}
+#resetBtn,#soundBtn{margin-top:10px;background:rgba(255,255,255,.035);color:#ddd6fe;border:1px solid var(--line)}
+.film-card{
+  display:none;margin-top:18px;padding:15px;border:1px solid var(--line);border-radius:20px;
+  background:rgba(255,255,255,.035);grid-template-columns:125px 1fr;gap:16px
+}
+.film-card.show{display:grid}
+.poster-wrap{width:125px;aspect-ratio:2/3;border-radius:13px;overflow:hidden;background:#151018;box-shadow:0 10px 25px #000}
+.poster-wrap img{width:100%;height:100%;object-fit:cover;display:block}
+.poster-placeholder{height:100%;display:grid;place-items:center;font-size:42px}
+.film-info h3{margin:0 0 7px;font-size:1.25rem;line-height:1.15}
+.meta{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 9px}
+.meta span{font-size:.75rem;color:#e7e5e4;background:rgba(255,255,255,.07);padding:5px 8px;border-radius:999px}
+.synopsis{color:#d6d3d1;font-size:.86rem;line-height:1.5;margin:0}
+.history{margin-top:20px}
+.history-head{display:flex;justify-content:space-between;color:#ddd6fe;font-size:.86rem;margin-bottom:8px}
+#historyList{list-style:none;margin:0;padding:0;max-height:190px;overflow:auto}
+#historyList li{padding:9px 11px;margin-bottom:6px;border-radius:9px;background:rgba(255,255,255,.035);border-left:3px solid var(--orange);font-size:.83rem;color:#d6d3d1}
+#historyList .empty{text-align:center;border-left:0;color:#78716c}
+details{margin-top:15px}
+summary{cursor:pointer;color:#c4b5fd;padding:8px 0}
+#movieList{max-height:210px;overflow:auto;padding-left:27px;color:#a8a29e;font-size:.84rem}
+#movieList li{padding:3px 0}
+#movieList li.used{text-decoration:line-through;opacity:.3}
+.settings{
+  margin-top:16px;padding:12px;border-radius:14px;background:rgba(255,255,255,.025);border:1px solid var(--line)
+}
+.settings summary{font-size:.82rem}
+.api-row{display:flex;gap:8px;margin-top:10px}
+.api-row input{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;background:#0c0910;color:white;padding:10px 12px;outline:none}
+.api-row input:focus{border-color:var(--orange)}
+.api-row button{width:auto;min-height:42px;background:var(--purple2);color:white}
+.api-note{font-size:.72rem;color:#9388a4;line-height:1.45;margin:8px 0 0}
+.status{font-size:.75rem;margin-top:8px;color:#a8a29e}
+.status.ok{color:var(--green)}.status.err{color:var(--red)}
+.footer{margin-top:26px;text-align:center;color:#746a7e;font-size:.72rem;line-height:1.5}
+.confetti{position:fixed;z-index:100;pointer-events:none;animation:fall 3s linear forwards}
+@keyframes fall{0%{transform:translateY(-30px) rotate(0);opacity:1}100%{transform:translateY(105vh) rotate(900deg);opacity:0}}
+@media(max-width:930px){.layout{grid-template-columns:1fr}.panel{width:min(100%,680px);margin:auto}}
+@media(max-width:520px){
+  .app{padding-top:18px}.logo{font-size:42px}.panel{padding:18px;border-radius:20px}
+  .film-card{grid-template-columns:95px 1fr;gap:12px}.poster-wrap{width:95px}
+  .pointer{border-left-width:18px;border-right-width:18px;border-top-width:38px}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important}}
+</style>
+</head>
+
+<body>
+<div class="bg" aria-hidden="true">
+  <span>🦇</span><span>👻</span><span>🕷️</span><span>🦇</span>
+</div>
+
+<main class="app">
+<header>
+  <div class="logo">🎃</div>
+  <h1>31 Noches de Halloween</h1>
+  <p class="subtitle">de <strong>Chivito y Mazapán</strong> · 31 noches · 31 películas · cero repeticiones</p>
+</header>
+
+<div class="layout">
+  <div class="wheel-box">
+    <div class="wheel-glow"></div>
+    <div class="pointer" aria-hidden="true"></div>
+    <canvas id="wheel" width="800" height="800" aria-label="Ruleta de películas de Halloween"></canvas>
+  </div>
+
+  <section class="panel">
+    <h2>🍿 ¿Qué veremos hoy?</h2>
+    <p class="description">Gira la ruleta y deja que Chivito y Mazapán decidan. Una película que ya salió no vuelve a aparecer hasta reiniciar las 31 noches.</p>
+
+    <div class="result" aria-live="polite">
+      <small>LA PELÍCULA ELEGIDA ES</small>
+      <div id="result">¡Gira la ruleta!</div>
+      <div id="counter" class="counter">31 películas disponibles</div>
+    </div>
+
+    <button id="spinBtn">🎃 GIRAR LA RULETA</button>
+    <button id="resetBtn">🔄 REINICIAR LAS 31 NOCHES</button>
+    <button id="soundBtn">🔊 Sonido: activado</button>
+
+    <article id="filmCard" class="film-card" aria-live="polite">
+      <div class="poster-wrap">
+        <img id="poster" alt="" hidden>
+        <div id="posterPlaceholder" class="poster-placeholder">🎬</div>
+      </div>
+      <div class="film-info">
+        <h3 id="filmTitle">Película</h3>
+        <div class="meta">
+          <span id="filmYear">Año</span>
+          <span id="filmRuntime">Duración</span>
+        </div>
+        <p id="filmSynopsis" class="synopsis">Cargando información…</p>
+      </div>
+    </article>
+
+    <div class="history">
+      <div class="history-head">
+        <span>🎬 Películas elegidas</span>
+        <span id="historyCount">0 / 31</span>
+      </div>
+      <ul id="historyList"><li class="empty">Todavía no has elegido ninguna.</li></ul>
+    </div>
+
+    <details>
+      <summary>📋 Ver las 31 películas</summary>
+      <ol id="movieList"></ol>
+    </details>
+
+    <details class="settings">
+      <summary>⚙️ Configurar pósteres y datos de películas</summary>
+      <div class="api-row">
+        <input id="apiKey" type="password" placeholder="Pega aquí tu clave de TMDB">
+        <button id="saveApi">Guardar</button>
+      </div>
+      <p class="api-note">
+        Los pósteres, duración y sinopsis se consultan en The Movie Database (TMDB).
+        Para usar esta función necesitas una API Read Access Token de TMDB. La clave se usa desde tu navegador y no se envía a ningún servidor creado por este sitio.
+      </p>
+      <div id="apiStatus" class="status">Sin clave configurada: la ruleta funciona, pero la ficha no podrá cargar datos de TMDB.</div>
+    </details>
+
+    <div class="footer">
+      Este producto usa TMDB para datos e imágenes de películas.
+      TMDB no respalda ni certifica este sitio.
+    </div>
+  </section>
+</div>
+</main>
+
+<script>
+/* =========================================================
+   31 PELÍCULAS
+   Puedes cambiar esta lista por tus favoritas.
+========================================================= */
+const movies = [
+  {title:"Halloween",year:1978},
+  {title:"Hocus Pocus",year:1993},
+  {title:"Beetlejuice",year:1988}, // Tim Burton
+  {title:"Edward Scissorhands",year:1990}, // Tim Burton
+  {title:"The Nightmare Before Christmas",year:1993}, // producido por Tim Burton
+  {title:"Sleepy Hollow",year:1999}, // Tim Burton
+  {title:"Corpse Bride",year:2005}, // Tim Burton
+  {title:"Sweeney Todd: The Demon Barber of Fleet Street",year:2007}, // Tim Burton
+  {title:"Dark Shadows",year:2012}, // Tim Burton
+  {title:"Frankenweenie",year:2012}, // Tim Burton
+  {title:"Scream",year:1996},
+  {title:"Coraline",year:2009},
+  {title:"The Addams Family",year:1991},
+  {title:"The Conjuring",year:2013},
+  {title:"It",year:2017},
+  {title:"A Nightmare on Elm Street",year:1984},
+  {title:"Friday the 13th",year:1980},
+  {title:"Halloweentown",year:1998},
+  {title:"Casper",year:1995},
+  {title:"The Craft",year:1996},
+  {title:"Trick 'r Treat",year:2007},
+  {title:"The Exorcist",year:1973},
+  {title:"Ghostbusters",year:1984},
+  {title:"The Shining",year:1980},
+  {title:"Monster House",year:2006},
+  {title:"ParaNorman",year:2012},
+  {title:"Child's Play",year:1988},
+  {title:"The Ring",year:2002},
+  {title:"Sinister",year:2012},
+  {title:"The Lost Boys",year:1987},
+  {title:"Scooby-Doo",year:2002}
+];
+
+const colors=["#ff7518","#7b2cbf","#e85d04","#5a189a","#ff9e00","#3c096c","#dc2f02","#7209b7"];
+const canvas=document.getElementById("wheel");
+const ctx=canvas.getContext("2d");
+const result=document.getElementById("result");
+const counter=document.getElementById("counter");
+const spinBtn=document.getElementById("spinBtn");
+const resetBtn=document.getElementById("resetBtn");
+const soundBtn=document.getElementById("soundBtn");
+const filmCard=document.getElementById("filmCard");
+const poster=document.getElementById("poster");
+const posterPlaceholder=document.getElementById("posterPlaceholder");
+const filmTitle=document.getElementById("filmTitle");
+const filmYear=document.getElementById("filmYear");
+const filmRuntime=document.getElementById("filmRuntime");
+const filmSynopsis=document.getElementById("filmSynopsis");
+const historyList=document.getElementById("historyList");
+const historyCount=document.getElementById("historyCount");
+const movieList=document.getElementById("movieList");
+const apiKeyInput=document.getElementById("apiKey");
+const saveApi=document.getElementById("saveApi");
+const apiStatus=document.getElementById("apiStatus");
+
+let available=[...movies];
+let history=[];
+let rotation=0;
+let spinning=false;
+let soundEnabled=true;
+let audioContext=null;
+let tmdbToken="";
+
+try{tmdbToken=localStorage.getItem("tmdb_token")||"";}catch(e){}
+apiKeyInput.value=tmdbToken;
+
+const TAU=Math.PI*2;
+
+function drawWheel(){
+  const size=canvas.width, center=size/2, radius=size*.43;
+  ctx.clearRect(0,0,size,size);
+
+  if(!available.length){
+    ctx.beginPath();ctx.arc(center,center,radius,0,TAU);
+    ctx.fillStyle="#21112d";ctx.fill();
+    ctx.strokeStyle="#ff7518";ctx.lineWidth=10;ctx.stroke();
+    ctx.fillStyle="#ffb347";ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.font="900 38px Arial";ctx.fillText("¡31 DE 31!",center,center-20);
+    ctx.font="25px Arial";ctx.fillText("🎃",center,center+35);
+    return;
+  }
+
+  const total=available.length, segment=TAU/total;
+  ctx.save();ctx.translate(center,center);ctx.rotate(rotation);
+
+  available.forEach((movie,index)=>{
+    const start=-Math.PI/2+index*segment;
+    const end=start+segment;
+
+    ctx.beginPath();ctx.moveTo(0,0);ctx.arc(0,0,radius,start,end);ctx.closePath();
+    ctx.fillStyle=colors[index%colors.length];ctx.fill();
+    ctx.strokeStyle="rgba(255,255,255,.75)";ctx.lineWidth=2;ctx.stroke();
+
+    ctx.save();
+    ctx.rotate(start+segment/2);
+    ctx.textAlign="right";ctx.textBaseline="middle";
+    const fontSize=Math.max(11,Math.min(19,300/total+4));
+    ctx.font=`900 ${fontSize}px Arial`;ctx.fillStyle="#fff";
+    let label=movie.title;
+    if(label.length>21)label=label.slice(0,19)+"…";
+    ctx.fillText(label,radius-13,0);
+    ctx.restore();
+  });
+
+  ctx.restore();
+
+  ctx.beginPath();ctx.arc(center,center,70,0,TAU);
+  ctx.fillStyle="#090909";ctx.fill();
+  ctx.strokeStyle="#ff7518";ctx.lineWidth=8;ctx.stroke();
+  ctx.font="45px Arial";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("🎃",center,center);
+}
+
+function updateUI(){
+  const n=available.length;
+  counter.textContent=n===0?"🎃 ¡Completaste las 31 películas!":`${n} ${n===1?"película disponible":"películas disponibles"}`;
+  historyCount.textContent=`${history.length} / 31`;
+
+  historyList.innerHTML="";
+  if(!history.length){
+    const li=document.createElement("li");li.className="empty";li.textContent="Todavía no has elegido ninguna.";historyList.appendChild(li);
+  }else{
+    history.slice().reverse().forEach((movie,i)=>{
+      const li=document.createElement("li");
+      li.textContent=`${history.length-i}. ${movie.title} (${movie.year})`;
+      historyList.appendChild(li);
+    });
+  }
+
+  movieList.innerHTML="";
+  movies.forEach(movie=>{
+    const li=document.createElement("li");
+    li.textContent=`${movie.title} (${movie.year})`;
+    if(!available.some(x=>x.title===movie.title && x.year===movie.year))li.classList.add("used");
+    movieList.appendChild(li);
+  });
+
+  drawWheel();
+}
+
+function initAudio(){
+  if(!soundEnabled)return;
+  try{
+    if(!audioContext)audioContext=new(window.AudioContext||window.webkitAudioContext)();
+    if(audioContext.state==="suspended")audioContext.resume();
+  }catch(e){}
+}
+
+function tick(){
+  if(!soundEnabled)return;
+  try{
+    initAudio();
+    const osc=audioContext.createOscillator();
+    const gain=audioContext.createGain();
+    osc.type="square";osc.frequency.value=170+Math.random()*100;
+    gain.gain.setValueAtTime(.035,audioContext.currentTime);
+    gain.gain.exponentialRampToValueAtTime(.001,audioContext.currentTime+.055);
+    osc.connect(gain);gain.connect(audioContext.destination);
+    osc.start();osc.stop(audioContext.currentTime+.055);
+  }catch(e){}
+}
+
+function winSound(){
+  if(!soundEnabled)return;
+  try{
+    initAudio();
+    [523,659,784,1046].forEach((f,i)=>{
+      const osc=audioContext.createOscillator();
+      const gain=audioContext.createGain();
+      const t=audioContext.currentTime+i*.09;
+      osc.type="sine";osc.frequency.value=f;
+      gain.gain.setValueAtTime(0,t);
+      gain.gain.linearRampToValueAtTime(.12,t+.02);
+      gain.gain.exponentialRampToValueAtTime(.001,t+.25);
+      osc.connect(gain);gain.connect(audioContext.destination);
+      osc.start(t);osc.stop(t+.25);
+    });
+  }catch(e){}
+}
+
+function confetti(){
+  const icons=["🎃","🦇","👻","🕷️","🕸️","🍬"];
+  for(let i=0;i<45;i++){
+    const el=document.createElement("div");
+    el.className="confetti";
+    el.textContent=icons[Math.floor(Math.random()*icons.length)];
+    el.style.left=Math.random()*100+"vw";
+    el.style.top="-30px";
+    el.style.fontSize=(14+Math.random()*18)+"px";
+    el.style.animationDuration=(2+Math.random()*2)+"s";
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),4500);
+  }
+}
+
+function spin(){
+  if(spinning||!available.length)return;
+
+  spinning=true;
+  spinBtn.disabled=true;
+  resetBtn.disabled=true;
+  result.textContent="🎃 Girando…";
+  initAudio();
+
+  const selectedIndex=Math.floor(Math.random()*available.length);
+  const total=available.length;
+  const segment=TAU/total;
+  const target=-selectedIndex*segment-segment/2;
+  let delta=target-(rotation%TAU);
+  while(delta<0)delta+=TAU;
+  delta+=(6+Math.floor(Math.random()*3))*TAU;
+
+  const start=rotation;
+  const duration=4800+Math.random()*900;
+  const startTime=performance.now();
+  let lastTick=0;
+
+  function animate(time){
+    let p=(time-startTime)/duration;
+    if(p>1)p=1;
+    const eased=1-Math.pow(1-p,4);
+    rotation=start+delta*eased;
+
+    const tickIndex=Math.floor(rotation/(TAU/total));
+    if(tickIndex!==lastTick){tick();lastTick=tickIndex}
+
+    drawWheel();
+
+    if(p<1)requestAnimationFrame(animate);
+    else finishSpin(selectedIndex);
+  }
+  requestAnimationFrame(animate);
+}
+
+async function finishSpin(index){
+  const selected=available[index];
+  available.splice(index,1);
+  history.push(selected);
+
+  result.textContent=selected.title;
+  winSound();
+  confetti();
+  updateUI();
+
+  spinning=false;
+  resetBtn.disabled=false;
+
+  if(available.length){
+    spinBtn.disabled=false;
+    spinBtn.textContent="🎃 GIRAR LA RULETA";
+  }else{
+    spinBtn.disabled=true;
+    spinBtn.textContent="🎃 ¡31 NOCHES COMPLETADAS!";
+  }
+
+  await loadMovieDetails(selected);
+}
+
+async function loadMovieDetails(movie){
+  filmCard.classList.add("show");
+  filmTitle.textContent=movie.title;
+  filmYear.textContent=movie.year;
+  filmRuntime.textContent="Duración: —";
+  filmSynopsis.textContent="Cargando póster, duración y sinopsis…";
+  poster.hidden=true;
+  poster.removeAttribute("src");
+  posterPlaceholder.style.display="grid";
+
+  if(!tmdbToken){
+    filmSynopsis.textContent="Añade tu clave de TMDB en ⚙️ Configurar pósteres y datos de películas para cargar automáticamente el póster, duración y sinopsis.";
+    return;
+  }
+
+  try{
+    const searchUrl=`https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(movie.title)}&year=${movie.year}&language=es-MX&include_adult=false`;
+    const searchRes=await fetch(searchUrl,{headers:{Authorization:`Bearer ${tmdbToken}`,accept:"application/json"}});
+    if(!searchRes.ok)throw new Error("No se pudo consultar TMDB");
+    const search=await searchRes.json();
+
+    if(!search.results?.length){
+      filmSynopsis.textContent="No encontramos esta película en TMDB. Puedes probar con el título original.";
+      return;
+    }
+
+    const best=search.results[0];
+    const detailUrl=`https://api.themoviedb.org/3/movie/${best.id}?language=es-MX`;
+    const detailRes=await fetch(detailUrl,{headers:{Authorization:`Bearer ${tmdbToken}`,accept:"application/json"}});
+    if(!detailRes.ok)throw new Error("No se pudieron obtener los detalles");
+    const detail=await detailRes.json();
+
+    filmTitle.textContent=detail.title||movie.title;
+    filmYear.textContent=(detail.release_date||`${movie.year}`).slice(0,4);
+    filmRuntime.textContent=detail.runtime?`Duración: ${detail.runtime} min`:"Duración: —";
+
+    filmSynopsis.textContent=detail.overview||"No hay sinopsis disponible en español para esta película.";
+
+    if(detail.poster_path){
+      poster.src=`https://image.tmdb.org/t/p/w500${detail.poster_path}`;
+      poster.alt=`Póster de ${detail.title}`;
+      poster.onload=()=>{poster.hidden=false;posterPlaceholder.style.display="none"};
+      poster.onerror=()=>{poster.hidden=true;posterPlaceholder.style.display="grid"};
+    }
+  }catch(error){
+    filmSynopsis.textContent="No pudimos cargar los datos de TMDB. Comprueba la clave y tu conexión a Internet.";
+  }
+}
+
+function resetAll(){
+  if(spinning)return;
+  available=[...movies];
+  history=[];
+  rotation=0;
+  result.textContent="¡Gira la ruleta!";
+  filmCard.classList.remove("show");
+  spinBtn.disabled=false;
+  spinBtn.textContent="🎃 GIRAR LA RULETA";
+  updateUI();
+}
+
+saveApi.addEventListener("click",()=>{
+  tmdbToken=apiKeyInput.value.trim();
+  try{localStorage.setItem("tmdb_token",tmdbToken)}catch(e){}
+  if(tmdbToken){
+    apiStatus.textContent="✓ Clave guardada en este navegador.";
+    apiStatus.className="status ok";
+  }else{
+    apiStatus.textContent="Sin clave configurada.";
+    apiStatus.className="status";
+  }
+});
+
+soundBtn.addEventListener("click",()=>{
+  soundEnabled=!soundEnabled;
+  soundBtn.textContent=soundEnabled?"🔊 Sonido: activado":"🔇 Sonido: desactivado";
+  if(soundEnabled)initAudio();
+});
+
+spinBtn.addEventListener("click",spin);
+resetBtn.addEventListener("click",resetAll);
+
+if(tmdbToken){
+  apiStatus.textContent="✓ Hay una clave de TMDB configurada en este navegador.";
+  apiStatus.className="status ok";
+}
+
+updateUI();
+</script>
+</body>
+</html>
